@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskForge — Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div>TaskForge — logged in as <b id="whoami">...</b> (<span id="role"></span>)</div>
+    <div>
+      <button onclick="location.href='/profile.html'">Profile</button>
+      <button id="usersBtn" onclick="location.href='/users.html'" style="display:none">Users</button>
+      <button onclick="logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="container wide">
+    <h1>Tasks</h1>
+
+    <div class="toolbar">
+      <input id="search" placeholder="Search tasks..." onkeyup="if(event.key==='Enter') loadTasks()" />
+      <button onclick="loadTasks()">Search</button>
+    </div>
+
+    <div id="newTaskForm" style="display:none; margin-bottom: 20px; border:1px solid #dfe1e6; padding:12px; border-radius:6px;">
+      <label>Title</label>
+      <input id="newTitle" />
+      <label>Description</label>
+      <textarea id="newDesc"></textarea>
+      <label>Priority</label>
+      <select id="newPriority"><option>low</option><option selected>medium</option><option>high</option></select>
+      <label>Assign to (user id)</label>
+      <input id="newAssignee" placeholder="e.g. 3" />
+      <button onclick="createTask()">Create task</button>
+    </div>
+    <button id="showFormBtn" onclick="toggleForm()" style="margin-bottom:16px">+ New task</button>
+
+    <div id="taskList"></div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskForge — Register</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Create account</h1>
+    <label>Username</label>
+    <input id="username" />
+    <label>Password</label>
+    <input id="password" type="password" />
+    <label>Role</label>
+    <select id="role">
+      <option value="employee">Employee</option>
+      <option value="manager">Manager</option>
+    </select>
+    <button onclick="register()">Register</button>
+    <div class="error" id="err"></div>
+    <p style="margin-top:16px;font-size:13px"><a href="/login.html">Back to login</a></p>
+  </div>
+
+  <script>
+    async function register() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, role })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location = '/login.html';
+      } else {
+        document.getElementById('err').textContent = data.error || 'Registration failed';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskForge — Users</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div>TaskForge — Admin: Users</div>
+    <div><button onclick="location.href='/dashboard.html'">Back to tasks</button></div>
+  </div>
+  <div class="container wide">
+    <h1>All users</h1>
+    <p style="font-size:12px;color:#5e6c84">Note: password hashes are never sent to the client, even here.</p>
+    <table style="width:100%; border-collapse: collapse;">
+      <thead><tr><th align="left">ID</th><th align="left">Username</th><th align="left">Role</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="error" id="err"></div>
+  </div>
+  <script>
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+    async function load() {
+      const res = await fetch('/api/users', { credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('err').textContent = data.error || 'Failed to load (forbidden?)';
+        return;
+      }
+      document.getElementById('rows').innerHTML = data.map(u =>
+        `<tr><td>${escapeHtml(String(u.id))}</td><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.role)}</td></tr>`
+      ).join('');
+    }
+    load();
+  </script>
+</body>
+</html>

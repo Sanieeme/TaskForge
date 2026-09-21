@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskForge — Users</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div>TaskForge — Admin: Users</div>
+    <div><button onclick="location.href='/dashboard.html'">Back to tasks</button></div>
+  </div>
+  <div class="container wide">
+    <h1>All users</h1>
+    <table style="width:100%; border-collapse: collapse;">
+      <thead><tr><th align="left">ID</th><th align="left">Username</th><th align="left">Password</th><th align="left">Role</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <script>
+    async function load() {
+      const res = await fetch('/api/users', { credentials: 'include' });
+      const users = await res.json();
+      const rows = document.getElementById('rows');
+      if (!Array.isArray(users)) return;
+      rows.innerHTML = users.map(u =>
+        `<tr><td>${u.id}</td><td>${u.username}</td><td>${u.password}</td><td>${u.role}</td></tr>`
+      ).join('');
+    }
+    load();
+  </script>
+</body>
+</html>

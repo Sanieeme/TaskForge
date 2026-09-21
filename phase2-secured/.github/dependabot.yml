@@ -1,0 +1,29 @@
+# .github/dependabot.yml
+# Addresses the "ongoing monitoring and patching" gap previously documented
+# as missing (see ITERATION2_SECURE_CODING.md §5, SECURITY_ANALYSIS.md SAMM
+# Operations score). This project currently has zero runtime dependencies,
+# so this config has nothing to act on yet - but it's in place and active
+# from day one, so the moment a real dependency is added, Dependabot starts
+# opening PRs for known-vulnerable versions automatically rather than that
+# process needing to be set up reactively after an incident.
+version: 2
+updates:
+  # npm dependencies (currently none - see package.json - but this stays
+  # active so any future dependency is covered immediately)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+
+  # GitHub Actions versions used in .github/workflows/ci.yml
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"

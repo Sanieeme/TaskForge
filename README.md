@@ -1,71 +1,76 @@
 WTC-76Z77SB5
 
-# TaskForge — Phase 1 Baseline
+# TaskForge — Complete Capstone Package
 
-A small full-stack task/ticket manager with authentication and role-based
-access control (Admin / Manager / Employee). This is the **Phase 1** build
-for the capstone: functional, but built quickly and **deliberately left
-insecure in several well-documented ways**, so there are real vulnerabilities
-to fix in Phase 2 and real vulnerabilities to find in Phase 3.
+Secure Web App Development and Penetration Testing Lifecycle: everything
+produced across all 4 capstone phases and all 3 course iterations, in one
+package.
 
-## Stack
-Plain Node.js only — no `npm install` required:
-- `node:http` for the server
-- `node:sqlite` (built into Node 22+) for storage
-- Vanilla HTML/CSS/JS on the frontend
+## Structure
 
-## Running it
-```bash
-node server.js
 ```
-Then open `http://localhost:3000`. The database file `taskforge.db` is
-created and seeded automatically on first run.
+TaskForge_Penetration_Test_Report.docx      <- Phase 4 deliverable (start here for grading)
+Iteration1_Cybersecurity_Fundamentals.md    <- standalone Iteration 1 theory doc
 
-**Seed accounts:**
-| Username | Password | Role |
-|---|---|---|
-| admin | admin123 | admin |
-| manager1 | manager123 | manager |
-| employee1 | employee123 | employee |
-| employee2 | employee123 | employee |
+phase1-vulnerable-baseline/                 <- Phase 1 + intentional vulnerabilities
+├── server.js, db.js, public/                  the app itself
+├── README.md                                  vulnerability table (11 findings)
+├── SECURITY_ANALYSIS.md                        Iteration 1 content, tied to this code
+├── pentest/                                    Iteration 3 tooling + guide + the report
 
-## What it does
-- Register / log in / log out
-- Create tasks, assign them, update status (To do / In progress / Done)
-- Comment on tasks
-- Search/filter tasks by keyword
-- View/edit a profile "avatar" field
-- Admin-intended user list page
+phase2-secured/                             <- Phase 2 + Phase 3 verification
+├── server.js                                  thin entry point (~20 lines)
+├── src/                                        Separation-of-Concerns layout:
+│   ├── config.js, db.js                          config + data access
+│   ├── auth/                                     password hashing, sessions
+│   ├── validation/, utils/                       input validators, HTML escaping
+│   ├── middleware/require-auth.js                the one place authorization is decided
+│   ├── services/audit-service.js                 audit logging
+│   ├── controllers/                              one file per resource (auth, tasks, comments, users, audit)
+│   └── http/                                     router, response/body helpers, CORS, static files
+├── ARCHITECTURE.md                              explains every module boundary and why
+├── public/                                      the fixed frontend
+├── tests/security.test.js                       17 automated regression tests
+├── scripts/sast-check.sh                        custom static analysis
+├── .github/workflows/ci.yml                     CI/CD pipeline
+├── .github/dependabot.yml                       dependency monitoring
+├── SECURITY_ANALYSIS.md, ITERATION2_SECURE_CODING.md
+├── pentest/                                     same Iteration 3 materials, re-verified against this build
 
-## Intentional vulnerabilities (Phase 1 — fix these in Phase 2)
-Every one of these is marked in the code with a `VULNERABLE (Phase 1)` comment.
+iteration3-pentest-standalone/              <- Iteration 3 as its own submission, if needed separately
+├── README.md, ITERATION3_PENTEST_GUIDE.md
+├── enumerate.py, sqli_check.py, wordlist.txt
+├── taskforge.postman_collection.json
+├── TaskForge_Penetration_Test_Report.docx
+```
 
-| # | Vulnerability | Where | OWASP Top 10 category |
-|---|---|---|---|
-| 1 | Passwords stored in **plaintext** | `db.js`, `server.js` (`handleRegister`) | A02: Cryptographic Failures |
-| 2 | **SQL Injection** on login — string-concatenated query lets you log in as any user via `username = admin' -- ` | `server.js` (`handleLogin`) | A03: Injection |
-| 3 | **SQL Injection** on the task search endpoint | `server.js` (`handleGetTasks`) | A03: Injection |
-| 4 | **Broken Access Control**: role is client-supplied on registration — you can self-register as `admin` | `server.js` (`handleRegister`) | A01: Broken Access Control |
-| 5 | **Broken Access Control**: no server-side role check on create/delete task, or on `/api/users` — UI hides buttons, but the API doesn't check | `server.js` (`handleCreateTask`, `handleDeleteTask`, `handleGetUsers`) | A01: Broken Access Control |
-| 6 | **IDOR**: any logged-in user can view/update/delete any task by ID, regardless of ownership | `server.js` (`handleUpdateTask`, `handleGetTasks`) | A01: Broken Access Control |
-| 7 | **Stored XSS**: comment text isn't sanitised server-side and is rendered via `innerHTML` client-side | `server.js` (`handleGetComments`), `app.js` (`loadComments`) | A03: Injection (XSS) |
-| 8 | **Session cookie** missing `HttpOnly`, `Secure`, `SameSite` | `server.js` (`handleLogin`) | A07: Identification & Authentication Failures |
-| 9 | **CORS misconfiguration**: reflects any `Origin` header with `Allow-Credentials: true` | `server.js` (CORS headers in the router) | A05: Security Misconfiguration |
-| 10 | No input validation, size limits, or content checks on the avatar field | `server.js` (`handleAvatar`) | A04: Insecure Design |
+## Quick start
 
-## Suggested Phase 2 fixes (for your write-up)
-- Hash passwords with `scrypt` (already imported via `node:crypto`) or `bcrypt`, with a per-user salt
-- Use parameterised queries everywhere (the codebase already uses `db.prepare()` with `?` placeholders elsewhere — apply that consistently to login and search)
-- Validate and enforce `role` server-side on registration (restrict self-registration to `employee`; require an admin to create managers/admins)
-- Add real authorization middleware: check `session.role` and (for tasks) ownership/assignment before allowing create/update/delete
-- Escape comment output (or use `textContent`/a templating engine with auto-escaping) and consider a Content-Security-Policy header
-- Set `HttpOnly; Secure; SameSite=Strict` on the session cookie
-- Restrict CORS to a known origin allowlist
-- Add basic validation (length limits, type checks) on all inputs, including the avatar field
+```bash
+# Run the vulnerable baseline
+cd phase1-vulnerable-baseline && node server.js   # http://localhost:3000
 
-## Suggested Phase 3 pentest targets
-- **Burp Suite / Repeater**: intercept the login request and try the SQLi payload above; try changing `assignee_id`/task `id` in requests to access other users' tasks
-- **sqlmap**: point at `POST /api/login` and `GET /api/tasks?search=`
-- **ffuf**: enumerate other potential endpoints/files under `/public`
-- **DevTools**: inspect the `tf_session` cookie flags; check if it's readable via `document.cookie` (it will be, since `HttpOnly` is missing)
-- **Postman**: as an `employee1` session, call `DELETE /api/tasks/1` or `GET /api/users` directly and confirm the access control failure
+# Run the secured version (separate terminal)
+cd phase2-secured && node server.js               # http://localhost:3001
+
+# Run the automated security test suite
+cd phase2-secured && npm test                     # 17 tests
+
+# Run the custom SAST check
+cd phase2-secured && bash scripts/sast-check.sh
+```
+
+Seed accounts (both apps): `admin/admin123`, `manager1/manager123`,
+`employee1/employee123`, `employee2/employee123`.
+
+## What's genuinely verified vs. simulated
+
+Every vulnerability, every fix, and every automated test in this package was
+actually run against a live instance during development — not written
+speculatively. The one honest limitation: Burp Suite, ffuf, sqlmap, and a
+real browser's DevTools could not run in the sandboxed environment this was
+built in (no outbound internet access, confirmed by direct testing).
+Functionally equivalent tooling (`enumerate.py`, `sqli_check.py`, and
+`curl`-based header inspection) reproduces the same findings, with the real
+tool commands documented alongside each substitute. See
+`pentest/ITERATION3_PENTEST_GUIDE.md` for full detail.

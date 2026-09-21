@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskForge — Log in</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>TaskForge <span style="font-size:12px;color:#006644">(Phase 2 — secured)</span></h1>
+    <p style="font-size:13px;color:#5e6c84">Demo accounts: admin/admin123 · manager1/manager123 · employee1/employee123</p>
+    <label>Username</label>
+    <input id="username" />
+    <label>Password</label>
+    <input id="password" type="password" />
+    <button onclick="login()">Log in</button>
+    <div class="error" id="err"></div>
+    <p style="margin-top:16px;font-size:13px">No account? <a href="/register.html">Register</a></p>
+  </div>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location = '/dashboard.html';
+      } else {
+        document.getElementById('err').textContent = data.error || 'Login failed';
+      }
+    }
+  </script>
+</body>
+</html>

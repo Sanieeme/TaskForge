@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>TaskForge — Profile</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div>TaskForge</div>
+    <div><button onclick="location.href='/dashboard.html'">Back to tasks</button></div>
+  </div>
+  <div class="container">
+    <h1>Profile</h1>
+    <label>Avatar (paste an image URL, or anything)</label>
+    <input id="avatar" />
+    <button onclick="saveAvatar()">Save</button>
+    <div class="error" id="err"></div>
+  </div>
+  <script>
+    async function saveAvatar() {
+      const avatar = document.getElementById('avatar').value;
+      const res = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar }),
+        credentials: 'include'
+      });
+      if (res.ok) {
+        document.getElementById('err').style.color = '#006644';
+        document.getElementById('err').textContent = 'Saved.';
+      } else {
+        document.getElementById('err').textContent = 'Failed to save';
+      }
+    }
+  </script>
+</body>
+</html>
