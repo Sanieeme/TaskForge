@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskForge — Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="topbar" id="topbar-root"></div>
+
+  <div class="container wide">
+    <div class="page-header">
+      <h1>Tasks</h1>
+      <button id="showFormBtn" onclick="toggleForm()" style="display:none; margin-top:0;">+ New task</button>
+    </div>
+
+    <div class="toolbar">
+      <input id="search" placeholder="Search tasks…" onkeyup="if(event.key==='Enter') loadTasks()" />
+      <button onclick="loadTasks()">Search</button>
+    </div>
+
+    <div id="newTaskForm" class="new-task-form" style="display:none">
+      <h2>New task</h2>
+      <div class="form-grid">
+        <div class="full">
+          <label for="newTitle">Title</label>
+          <input id="newTitle" maxlength="200" placeholder="e.g. Update onboarding docs" />
+        </div>
+        <div class="full">
+          <label for="newDesc">Description</label>
+          <textarea id="newDesc" maxlength="2000" placeholder="Optional details…"></textarea>
+        </div>
+        <div>
+          <label for="newPriority">Priority</label>
+          <select id="newPriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+        </div>
+        <div>
+          <label for="newAssignee">Assign to (user ID)</label>
+          <input id="newAssignee" placeholder="e.g. 3" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button onclick="createTask()">Create task</button>
+        <button class="secondary" onclick="toggleForm()">Cancel</button>
+      </div>
+      <div class="error" id="formErr"></div>
+    </div>
+
+    <div id="loading" class="loading-state"><span class="spinner"></span>Loading tasks…</div>
+    <div id="taskList" class="task-list"></div>
+  </div>
+
+  <script src="/common.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

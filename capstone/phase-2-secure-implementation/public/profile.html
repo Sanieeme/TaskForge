@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskForge — Profile</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="topbar" id="topbar-root"></div>
+
+  <div class="container">
+    <h1>Profile</h1>
+
+    <div style="display:flex; align-items:center; gap:16px; margin:20px 0;">
+      <img id="preview" class="avatar avatar-lg" src="" alt="" style="display:none" onerror="this.style.display='none'; document.getElementById('previewFallback').style.display='flex';" />
+      <div id="previewFallback" class="avatar-fallback" style="width:72px;height:72px;font-size:22px;background:var(--primary-light);color:var(--primary);">?</div>
+      <div style="font-size:13px;color:var(--text-muted)">Live preview of your avatar</div>
+    </div>
+
+    <label for="avatar">Avatar URL <span class="hint">(http/https image URL, max 500 chars)</span></label>
+    <input id="avatar" placeholder="https://example.com/me.png" maxlength="500" oninput="updatePreview()" />
+    <button onclick="saveAvatar()">Save changes</button>
+    <div class="error" id="err"></div>
+  </div>
+
+  <script src="/common.js"></script>
+  <script>
+    initTopbar();
+
+    const preview = document.getElementById('preview');
+    const fallback = document.getElementById('previewFallback');
+
+    function updatePreview() {
+      const url = document.getElementById('avatar').value.trim();
+      if (url) {
+        preview.src = url;
+        preview.style.display = 'block';
+        fallback.style.display = 'none';
+      } else {
+        preview.style.display = 'none';
+        fallback.style.display = 'flex';
+      }
+    }
+
+    async function saveAvatar() {
+      const avatar = document.getElementById('avatar').value;
+      const err = document.getElementById('err');
+      err.className = 'error';
+      err.textContent = '';
+      try {
+        await apiFetch('/api/profile/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar }),
+        });
+        err.className = 'success-msg';
+        err.textContent = 'Saved.';
+      } catch (e) {
+        err.className = 'error';
+        err.textContent = e.message || 'Failed to save';
+      }
+    }
+  </script>
+</body>
+</html>

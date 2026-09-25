@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskForge — Register</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <div class="logo">TF</div>
+      <h1>Create account</h1>
+    </div>
+    <p class="helper-note">
+      New accounts are created as <b>Employee</b>. A Manager or Admin can
+      promote accounts later — that's an admin-only action, not exposed here.
+    </p>
+
+    <form id="registerForm">
+      <label for="username">Username <span class="hint">(3–32 chars, letters/numbers/underscore)</span></label>
+      <input id="username" autocomplete="username" autofocus />
+      <label for="password">Password <span class="hint">(min. 8 characters)</span></label>
+      <input id="password" type="password" autocomplete="new-password" />
+      <button id="registerBtn" type="submit">Register</button>
+      <div class="error" id="err"></div>
+    </form>
+
+    <p style="margin-top:20px;font-size:13px"><a href="/login.html">← Back to login</a></p>
+  </div>
+
+  <script src="/common.js"></script>
+  <script>
+    const form = document.getElementById('registerForm');
+    const btn = document.getElementById('registerBtn');
+    const err = document.getElementById('err');
+
+    form.addEventListener('submit', (e) => { e.preventDefault(); register(); });
+
+    async function register() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      err.textContent = '';
+
+      if (username.length < 3) {
+        err.textContent = 'Username must be at least 3 characters.';
+        return;
+      }
+      if (password.length < 8) {
+        err.textContent = 'Password must be at least 8 characters.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      try {
+        await apiFetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        window.location = '/login.html';
+      } catch (e) {
+        err.textContent = e.message || 'Network error — is the server running?';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Register';
+      }
+    }
+  </script>
+</body>
+</html>

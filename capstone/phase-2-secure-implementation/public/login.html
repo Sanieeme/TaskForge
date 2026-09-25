@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskForge — Log in</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <div class="logo">TF</div>
+      <h1>TaskForge</h1>
+    </div>
+    <p class="subtitle"><span class="tag">Secured build</span></p>
+
+    <p class="helper-note">
+      Demo accounts: <b>admin</b>/admin123 · <b>manager1</b>/manager123 · <b>employee1</b>/employee123
+    </p>
+
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input id="username" autocomplete="username" autofocus />
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" />
+      <button id="loginBtn" type="submit">Log in</button>
+      <div class="error" id="err"></div>
+    </form>
+
+    <p style="margin-top:20px;font-size:13px">No account? <a href="/register.html">Register</a></p>
+  </div>
+
+  <script src="/common.js"></script>
+  <script>
+    const form = document.getElementById('loginForm');
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('err');
+
+    form.addEventListener('submit', (e) => { e.preventDefault(); login(); });
+
+    async function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      err.textContent = '';
+
+      if (!username || !password) {
+        err.textContent = 'Enter a username and password.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
+      try {
+        await apiFetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        window.location = '/dashboard.html';
+      } catch (e) {
+        err.textContent = e.message || 'Network error — is the server running?';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Log in';
+      }
+    }
+  </script>
+</body>
+</html>

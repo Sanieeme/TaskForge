@@ -1,0 +1,60 @@
+name: CI - Secure Coding Pipeline
+
+# Runs on every push and PR - the "shift-left" principle in practice:
+# these checks run automatically before a human ever reviews the code,
+# and long before anything resembling a Phase 3 pentest.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # --- Secrets scanning -----------------------------------------------
+      # Fails the build if a .env file (real secrets) is ever accidentally
+      # committed, rather than relying on someone noticing in review.
+      - name: Fail if a real .env file is committed
+        run: |
+          if [ -f .env ]; then
+            echo "::error::.env file must never be committed - see .env.example"
+            exit 1
+          fi
+
+      # --- Custom SAST (static analysis) -----------------------------------
+      # Encodes the exact Phase 1 anti-patterns (string-concatenated SQL,
+      # innerHTML XSS sinks, hardcoded secrets, permissive CORS) so a
+      # regression is caught here, not in a pentest three weeks later.
+      - name: Run custom SAST check
+        run: bash scripts/sast-check.sh
+
+      # --- Dependency / supply chain security ------------------------------
+      # This project deliberately has zero runtime dependencies (see
+      # package.json and ITERATION2_SECURE_CODING.md), which is itself the
+      # strongest possible supply-chain mitigation - there is no Log4Shell-
+      # or event-stream-style third-party package to compromise. `npm audit`
+      # is still run so that if a dependency is ever added later, this step
+      # already exists to catch known-vulnerable versions before merge.
+      - name: Dependency audit (supply chain check)
+        run: npm audit --omit=dev || true
+        # `|| true` only because this demo has zero dependencies today, so
+        # `npm audit` has nothing to scan yet. Remove `|| true` once real
+        # dependencies exist, so a vulnerable dependency actually fails CI.
+
+      # --- Security regression tests (code review automation) -------------
+      # These are the same fixes verified manually during development
+      # (SQLi bypass rejected, IDOR blocked, XSS escaped, role checks
+      # enforced, cookie flags present) - now run automatically on every
+      # change so a future refactor can't silently reintroduce them.
+      - name: Run automated security tests
+        run: npm test
